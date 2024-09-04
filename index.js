@@ -22,7 +22,12 @@ let latestMessageId = 0;
 async function checkMentionsAndReply() {
   try {
     // ルーム内のメンションをチェック
-    const roomMessages = await chatwork.getRoomMessages(targetRoomId, { force: 0, after_id: latestMessageId });  // 修正: getMessages から getRoomMessages に変更
+    const roomMessages = await chatwork.getRoomMessages(targetRoomId, { force: 0, after_id: latestMessageId }); 
+
+    // roomMessages が空の配列の場合は何もしない
+    if (!roomMessages || roomMessages.length === 0) {
+      return;
+    }
 
     for (const message of roomMessages) {
       if (message.body.includes(`[To:${myChatworkId}]`) && message.account.account_id !== myChatworkId) { 
