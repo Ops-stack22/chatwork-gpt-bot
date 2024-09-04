@@ -22,7 +22,7 @@ let latestMessageId = 0;
 async function checkMentionsAndReply() {
   try {
     // ルーム内のメンションをチェック
-    const roomMessages = await chatwork.getRoomMessages(targetRoomId, { force: 0, after_id: latestMessageId }); 
+    const roomMessages = await chatwork.getRoomMessages(targetRoomId, { force: 0, after_id: latestMessageId });  // 修正: getMessages から getRoomMessages に変更
 
     for (const message of roomMessages) {
       if (message.body.includes(`[To:${myChatworkId}]`) && message.account.account_id !== myChatworkId) { 
