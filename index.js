@@ -1,6 +1,6 @@
 const express = require('express');
 const Chatwork = require('chatwork-api');
-const { Configuration, OpenAIApi } = require('openai');
+const { OpenAIApi, Configuration } = require('openai'); 
 const { google } = require('googleapis');
 require('dotenv').config();
 
@@ -8,7 +8,8 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 const chatwork = new Chatwork({ token: process.env.CHATWORK_API_TOKEN });
-const openai = new OpenAIApi(new Configuration({ apiKey: process.env.OPENAI_API_KEY }));
+const configuration = new Configuration({ apiKey: process.env.OPENAI_API_KEY }); 
+const openai = new OpenAIApi(configuration);
 
 const roomId = process.env.CHATWORK_ROOM_ID;
 const myChatworkId = process.env.CHATWORK_ID;
@@ -18,12 +19,12 @@ let latestMessageId = 0;
 
 async function checkMentionsAndReply() {
   try {
-    const messages = await chatwork.getMessages(roomId, { force: 0, after_id: latestMessageId }); // 修正: getRoomMessages から getMessages に変更
+    const messages = await chatwork.getMessages(roomId, { force: 0, after_id: latestMessageId }); 
 
     for (const message of messages) {
       if (message.body.includes(`[To:${myChatworkId}]`) && message.account.account_id !== myChatworkId) {
         const reply = await generateReplyWithChatGPT(message.body);
-        await chatwork.postMessage(roomId, reply);  // 修正: postRoomMessage から postMessage に変更
+        await chatwork.postMessage(roomId, reply);  
         await logToSpreadsheet(message.body, reply);
       }
       latestMessageId = Math.max(latestMessageId, message.message_id);
