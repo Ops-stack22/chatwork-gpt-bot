@@ -1,6 +1,6 @@
 const express = require('express');
 const Chatwork = require('chatwork-api');
-const { OpenAIApi } = require('openai');
+const { OpenAIApi, Configuration } = require('openai'); // 修正: Configuration をインポートに追加
 const { google } = require('googleapis');
 require('dotenv').config();
 
@@ -8,8 +8,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 const chatwork = new Chatwork({ token: process.env.CHATWORK_API_TOKEN });
-const configuration = new openai.Configuration({ apiKey: process.env.OPENAI_API_KEY }); 
-const openai = new OpenAIApi(configuration);
+const openai = new OpenAIApi(new Configuration({ apiKey: process.env.OPENAI_API_KEY })); // 修正: configuration を作成
 
 const roomId = process.env.CHATWORK_ROOM_ID;
 const myChatworkId = process.env.CHATWORK_ID;
