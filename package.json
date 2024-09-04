@@ -7,7 +7,7 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "chatwork-api": "^2.0.0",  // 修正箇所: ^1.1.0 から ^2.0.0 に変更
+    "chatwork-api": "^2.0.0", 
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "openai": "^4.10.0",
