@@ -1,6 +1,6 @@
 const express = require('express');
 const Chatwork = require('chatwork-api');
-const { Configuration, OpenAIApi } = require("openai"); 
+const { Configuration, OpenAIApi } = require("openai");
 const { google } = require('googleapis');
 require('dotenv').config();
 
@@ -38,11 +38,12 @@ async function checkMentionsAndReply() {
 
 async function generateReplyWithChatGPT(message) {
   try {
-    const completion = await openai.createChatCompletion({
-      model: 'gpt-3.5-turbo',
-      messages: [{ role: 'user', content: message }],
+    const completion = await openai.createCompletion({ // 修正: createCompletion を使用
+      model: "text-davinci-003", // モデルを適切なものに変更してください
+      prompt: message,
+      max_tokens: 100, // 必要に応じて調整してください
     });
-    return completion.data.choices[0].message.content;
+    return completion.data.choices[0].text; 
   } catch (error) {
     console.error('Error generating reply with ChatGPT:', error);
     return '申し訳ありません、現在返信を生成できません。';
