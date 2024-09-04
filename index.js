@@ -1,6 +1,6 @@
 const express = require('express');
 const Chatwork = require('chatwork-api');
-const { OpenAIApi, Configuration } = require('openai'); 
+const { OpenAIApi } = require('openai');
 const { google } = require('googleapis');
 require('dotenv').config();
 
@@ -8,7 +8,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 const chatwork = new Chatwork({ token: process.env.CHATWORK_API_TOKEN });
-const configuration = new Configuration({ apiKey: process.env.OPENAI_API_KEY }); 
+const configuration = new openai.Configuration({ apiKey: process.env.OPENAI_API_KEY }); 
 const openai = new OpenAIApi(configuration);
 
 const roomId = process.env.CHATWORK_ROOM_ID;
