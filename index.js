@@ -21,16 +21,19 @@ let latestMessageId = 0;
 
 async function checkMentionsAndReply() {
   try {
-    const messages = await chatwork.getMessages(targetRoomId, { force: 0, after_id: latestMessageId }); 
+    // ルーム内のメンションをチェック
+    const roomMessages = await chatwork.getMessages(targetRoomId, { force: 0, after_id: latestMessageId }); 
 
     for (const message of messages) {
-      if (message.body.includes(`[To:${myChatworkId}]`) && message.account.account_id !== myChatworkId && message.room.room_id === targetRoomId) { 
-        const reply = await generateReplyWithChatGPT(message.body);
-        await chatwork.postMessage(targetRoomId, reply);  
-        await logToSpreadsheet(message.body, reply);
+      if (message.body.includes(`[To:${myChatworkId}]`) && message.account.account_id !== myChatworkId) { 
+        const suggestedReply = await generateReplyWithChatGPT(message.body);
+        const finalReply = processSuggestedReply(suggestedReply); 
+        await chatwork.postMessage(targetRoomId, finalReply);  
+        await logToSpreadsheet(message.body, suggestedReply, finalReply);
       }
       latestMessageId = Math.max(latestMessageId, message.message_id);
     }
+
   } catch (error) {
     console.error('Error checking mentions and replying:', error);
   }
@@ -43,14 +46,19 @@ async function generateReplyWithChatGPT(message) {
       prompt: message,
       max_tokens: 100, 
     });
-    return completion.data.choices[0].text; 
+    return completion.data.choices[0].text.trim(); 
   } catch (error) {
     console.error('Error generating reply with ChatGPT:', error);
-    return '申し訳ありません、現在返信を生成できません。';
+    return '申し訳ありません、現在返信を生成できません。'; 
   }
 }
 
-async function logToSpreadsheet(mention, reply) {
+function processSuggestedReply(suggestedReply) {
+  // 必要に応じて、suggestedReply を編集する処理を追加
+  return suggestedReply; 
+}
+
+async function logToSpreadsheet(mention, suggestedReply, finalReply) {
   const auth = new google.auth.GoogleAuth({
     credentials: JSON.parse(Buffer.from(process.env.GOOGLE_APPLICATION_CREDENTIALS, 'base64').toString()),
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
@@ -65,14 +73,15 @@ async function logToSpreadsheet(mention, reply) {
     [
       new Date().toISOString(),
       mention,
-      reply,
+      suggestedReply,
+      finalReply,
     ],
   ];
 
   try {
     await sheets.spreadsheets.values.append({
       spreadsheetId,
-      range: `${sheetName}!A:C`,
+      range: `${sheetName}!A:D`, // ログの列数を4に変更
       valueInputOption: 'USER_ENTERED',
       resource: { values },
     });
@@ -82,7 +91,7 @@ async function logToSpreadsheet(mention, reply) {
   }
 }
 
-setInterval(checkMentionsAndReply, 60000); // 1分ごとに実行
+setInterval(checkMentionsAndReply, 60000); 
 
 app.get('/', (req, res) => {
   res.send('Chatwork bot is running!');
