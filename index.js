@@ -13,7 +13,7 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
-const roomId = process.env.CHATWORK_ROOM_ID;
+const targetRoomId = process.env.CHATWORK_ROOM_ID; 
 const myChatworkId = process.env.CHATWORK_ID;
 const userName = process.env.USER_NAME;
 
@@ -21,12 +21,12 @@ let latestMessageId = 0;
 
 async function checkMentionsAndReply() {
   try {
-    const messages = await chatwork.getMessages(roomId, { force: 0, after_id: latestMessageId }); 
+    const messages = await chatwork.getMessages(targetRoomId, { force: 0, after_id: latestMessageId }); 
 
     for (const message of messages) {
-      if (message.body.includes(`[To:${myChatworkId}]`) && message.account.account_id !== myChatworkId) {
+      if (message.body.includes(`[To:${myChatworkId}]`) && message.account.account_id !== myChatworkId && message.room.room_id === targetRoomId) { 
         const reply = await generateReplyWithChatGPT(message.body);
-        await chatwork.postMessage(roomId, reply);  
+        await chatwork.postMessage(targetRoomId, reply);  
         await logToSpreadsheet(message.body, reply);
       }
       latestMessageId = Math.max(latestMessageId, message.message_id);
@@ -38,10 +38,10 @@ async function checkMentionsAndReply() {
 
 async function generateReplyWithChatGPT(message) {
   try {
-    const completion = await openai.createCompletion({ // 修正: createCompletion を使用
-      model: "text-davinci-003", // モデルを適切なものに変更してください
+    const completion = await openai.createCompletion({ 
+      model: "text-davinci-003", 
       prompt: message,
-      max_tokens: 100, // 必要に応じて調整してください
+      max_tokens: 100, 
     });
     return completion.data.choices[0].text; 
   } catch (error) {
