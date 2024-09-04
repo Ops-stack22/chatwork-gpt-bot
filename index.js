@@ -18,12 +18,12 @@ let latestMessageId = 0;
 
 async function checkMentionsAndReply() {
   try {
-    const messages = await chatwork.getRoomMessages(roomId, { force: 0, after_id: latestMessageId });
+    const messages = await chatwork.getMessages(roomId, { force: 0, after_id: latestMessageId }); // 修正: getRoomMessages から getMessages に変更
 
     for (const message of messages) {
       if (message.body.includes(`[To:${myChatworkId}]`) && message.account.account_id !== myChatworkId) {
         const reply = await generateReplyWithChatGPT(message.body);
-        await chatwork.postRoomMessage(roomId, reply);
+        await chatwork.postMessage(roomId, reply);  // 修正: postRoomMessage から postMessage に変更
         await logToSpreadsheet(message.body, reply);
       }
       latestMessageId = Math.max(latestMessageId, message.message_id);
