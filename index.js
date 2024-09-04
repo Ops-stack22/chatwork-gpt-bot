@@ -22,9 +22,9 @@ let latestMessageId = 0;
 async function checkMentionsAndReply() {
   try {
     // ルーム内のメンションをチェック
-    const roomMessages = await chatwork.getMessages(targetRoomId, { force: 0, after_id: latestMessageId }); 
+    const roomMessages = await chatwork.getRoomMessages(targetRoomId, { force: 0, after_id: latestMessageId }); 
 
-    for (const message of messages) {
+    for (const message of roomMessages) {
       if (message.body.includes(`[To:${myChatworkId}]`) && message.account.account_id !== myChatworkId) { 
         const suggestedReply = await generateReplyWithChatGPT(message.body);
         const finalReply = processSuggestedReply(suggestedReply); 
@@ -81,7 +81,7 @@ async function logToSpreadsheet(mention, suggestedReply, finalReply) {
   try {
     await sheets.spreadsheets.values.append({
       spreadsheetId,
-      range: `${sheetName}!A:D`, // ログの列数を4に変更
+      range: `${sheetName}!A:D`, 
       valueInputOption: 'USER_ENTERED',
       resource: { values },
     });
